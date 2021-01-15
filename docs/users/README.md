@@ -1,6 +1,6 @@
 <div align="center">
 
-# Who's Using This?
+# 有谁在使用？
 
 </div>
 
@@ -24,11 +24,8 @@
     <a href="https://utecca.com">
       <img src="./utecca.svg" alt="Utecca" title="Utecca">
     </a>
-    <a href="https://beamaustralia.com.au">
-      <img src="https://d2kt0g16v1klgn.cloudfront.net/wp-content/uploads/Beam-Logo-Small.png" alt="Beam Australia" title="Beam Australia">
-    </a>
-    <a href="https://cinemax.co.ao">
-      <img src="https://cinemax.co.ao/logo.png" alt="Cinemas Cinemax" title="Cinemas Cinemax">
+    <a href="https://haxifang.com">
+      <img src="./hxflogo.svg" alt="Hash-Fun" title="哈希坊">
     </a>
   </div>
 </div>

@@ -1,26 +1,9 @@
-# Configuration
+# 配置文件
 
-Lighthouse comes with sensible configuration defaults and works right out of the box.
-Should you feel the need to change your configuration, you need to publish the configuration file first.
+Lighthouse 默认的配置文件一切都刚刚好，您可以直接使用。如果您需要更改默认配置，则需要先生成配置文件。
 
 ```bash
 php artisan vendor:publish --provider="Nuwave\Lighthouse\LighthouseServiceProvider" --tag=config
 ```
 
-The configuration file will be placed in `config/lighthouse.php`.
-
-## CORS
-
-A GraphQL API can be consumed from multiple clients, which may or may not reside
-on the same domain as your server. Make sure you enable [Cross-Origin Resource Sharing (CORS)](https://laravel.com/docs/7.x/routing#cors)
-for your GraphQL endpoint in `config/cors.php`:
-
-```diff
-return [
--   'paths' => ['api/*'],
-+   'paths' => ['api/*', 'graphql'],
-    ...
-];
-```
-
-> CORS is built into Laravel starting from version 7, for previous versions use https://github.com/fruitcake/laravel-cors
+配置文件将被在 `config/lighthouse.php` 中。🍺

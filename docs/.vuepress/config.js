@@ -12,6 +12,21 @@ module.exports = {
             },
         ],
         [
+            "meta",
+            {
+                name: "title",
+                content: "Lighthouse 中文网，提供 Lighthouse-php 中文文档",
+            },
+        ],
+        [
+            "meta",
+            {
+                name: "keywords",
+                content:
+                    "Laravel,Laravel Lighthouse,GraphQL,Lighthouse,Lighthouse-php,Lighthouse php,Lighthouse 中文,Laravel 中文,Laravel 文档,Lighthouse-php 文档",
+            },
+        ],
+        [
             "link",
             {
                 rel: "stylesheet",
@@ -32,65 +47,131 @@ module.exports = {
     ],
     theme: "default-prefers-color-scheme",
     themeConfig: {
-        defaultTheme: "light",
-        logo: "/logo.svg",
-        editLinks: true, //  "Edit this page" at the bottom of each page
-        repo: "nuwave/lighthouse", //  Github repo
-        docsDir: "docs/", //  Github repo docs folder
-        versions: {
-            latest: versioning.versions.latest,
-            selected: versioning.versions.latest,
-            all: versioning.versions.all,
+        locales: {
+            "/en/": {
+                defaultTheme: "light",
+                logo: "/logo.svg",
+                editLinks: true, //  "Edit this page" at the bottom of each page
+                repo: "nuwave/lighthouse", //  Github repo
+                docsDir: "docs/", //  Github repo docs folder
+                selectText: "Languages",
+                label: "English",
+                ariaLabel: "Languages",
+                editLinkText: "Edit this page on GitHub",
+                serviceWorker: {
+                    updatePopup: {
+                        message: "New content is available.",
+                        buttonText: "Refresh",
+                    },
+                },
+                algolia: {},
+                versions: {
+                    latest: versioning.versions.latest,
+                    selected: versioning.versions.latest,
+                    all: versioning.versions.all,
+                },
+                nav: [
+                    {
+                        text: "Docs",
+                        items: versioning.linksFor(
+                            "getting-started/installation.md"
+                        ), // TODO create custom component
+                    },
+                    {
+                        text: "Tutorial",
+                        link: "/en/tutorial/",
+                    },
+                    {
+                        text: "Resources",
+                        link: "/en/resources/",
+                    },
+                    {
+                        text: "Users",
+                        link: "/en/users/",
+                    },
+                    {
+                        text: "Changelog",
+                        link:
+                            "https://github.com/nuwave/lighthouse/blob/master/CHANGELOG.md",
+                    },
+                    {
+                        text: "Upgrade Guide",
+                        link:
+                            "https://github.com/nuwave/lighthouse/blob/master/UPGRADE.md",
+                    },
+                ],
+                sidebar: versioning.sidebars,
+            },
+            "/": {
+                defaultTheme: "light",
+                logo: "/logo.svg",
+                editLinks: true, //  "Edit this page" at the bottom of each page
+                repo: "haxibiao/lighthouse", //  Github repo
+                docsDir: "docs/", //  Github repo docs folder
+                selectText: "选择语言",
+                // 该语言在下拉菜单中的标签
+                label: "简体中文",
+                // 编辑链接文字
+                editLinkText: "在 GitHub 上编辑此页",
+                // Service Worker 的配置
+                serviceWorker: {
+                    updatePopup: {
+                        message: "发现新内容可用.",
+                        buttonText: "刷新",
+                    },
+                },
+                // 当前 locale 的 algolia docsearch 选项
+                algolia: {},
+                versions: {
+                    latest: versioning.versions.latest,
+                    selected: versioning.versions.latest,
+                    all: versioning.versions.all,
+                },
+                nav: [
+                    {
+                        text: "文档",
+                        items: versioning.linksFor(
+                            "getting-started/installation.md"
+                        ), // TODO create custom component
+                    },
+                    {
+                        text: "入门",
+                        link: "/tutorial/",
+                    },
+                    {
+                        text: "资源",
+                        link: "/resources/",
+                    },
+                    {
+                        text: "用户",
+                        link: "/users/",
+                    },
+                    {
+                        text: "更新日志",
+                        link:
+                            "https://github.com/nuwave/lighthouse/blob/master/CHANGELOG.md",
+                    },
+                    {
+                        text: "升级指南",
+                        link:
+                            "https://github.com/nuwave/lighthouse/blob/master/UPGRADE.md",
+                    },
+                ],
+                sidebar: versioning.sidebars,
+            },
         },
-        nav: [
-            {
-                text: "Docs",
-                items: versioning.linksFor("getting-started/installation.md"), // TODO create custom component
-            },
-            {
-                text: "Tutorial",
-                link: "/tutorial/",
-            },
-            {
-                text: "Resources",
-                link: "/resources/",
-            },
-            {
-                text: "Users",
-                link: "/users/",
-            },
-            {
-                text: "Changelog",
-                link:
-                    "https://github.com/nuwave/lighthouse/blob/master/CHANGELOG.md",
-            },
-            {
-                text: "Upgrade Guide",
-                link:
-                    "https://github.com/nuwave/lighthouse/blob/master/UPGRADE.md",
-            },
-        ],
-        sidebar: versioning.sidebars,
     },
     locales: {
         "/en/": {
             lang: "en-US",
             title: "Lighthouse",
             description: "A framework for serving GraphQL from Laravel",
-            selectText: "Languages",
-            label: "English",
-            ariaLabel: "Languages",
-            editLinkText: "Edit this page on GitHub",
         },
         "/": {
             lang: "zh-CN",
             title: "Lighthouse 中文网",
             description:
                 "适用于 Laravel 的 GraphQL 服务器支持，PHP 实现 GraphQL 服务，Lighthouse 中文网，提供 Lighthouse-php 中文文档",
-            selectText: "Languages",
-            label: "简体中文",
-            ariaLabel: "Languages",
-            editLinkText: "在 GitHub 上编辑此页",
         },
     },
     plugins: [
