@@ -1,4 +1,5 @@
 const versioning = require("./lib/versioning.js");
+const versioning_en = require("./lib/versioning.en.js");
 
 module.exports = {
     title: "Lighthouse",
@@ -66,15 +67,15 @@ module.exports = {
                 },
                 algolia: {},
                 versions: {
-                    latest: versioning.versions.latest,
-                    selected: versioning.versions.latest,
-                    all: versioning.versions.all,
+                    latest: versioning_en.versions.latest,
+                    selected: versioning_en.versions.latest,
+                    all: versioning_en.versions.all,
                 },
                 nav: [
                     {
                         text: "Docs",
-                        items: versioning.linksFor(
-                            "getting-started/installation.md"
+                        items: versioning_en.linksFor(
+                            "/getting-started/installation.md"
                         ), // TODO create custom component
                     },
                     {
@@ -100,7 +101,7 @@ module.exports = {
                             "https://github.com/nuwave/lighthouse/blob/master/UPGRADE.md",
                     },
                 ],
-                sidebar: versioning.sidebars,
+                sidebar: versioning_en.sidebars,
             },
             "/": {
                 defaultTheme: "light",
