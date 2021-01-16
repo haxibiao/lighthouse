@@ -1,23 +1,22 @@
-# Artisan Commands
+# Artisan 指令（Artisan Commands）
 
-Lighthouse provides some convenient artisan commands. All of them
-are namespaced under `lighthouse`.
+Lighthouse 提供了一些方便的 Artisan 指令。所有这些都在 `lighthouse` 开始命名。
 
 ## cache
 
-Compile the GraphQL schema and cache it.
+编译 GraphQL 架构并缓存它。
 
     php artisan lighthouse:cache
 
 ## clear-cache
 
-Clear the GraphQL schema cache.
+清除 GraphQL AST 的缓存。
 
     php artisan lighthouse:clear-cache
 
 ## directive
 
-Create a class for a custom schema directive.
+为自定义架构指令创建类。
 
     php artisan lighthouse:directive
 
@@ -28,18 +27,19 @@ imports for you.
 
 ## ide-helper
 
-Create IDE helper files to improve type checking and autocompletion.
+创建一个包含所有服务器端指令的模式。这将允许一些 IDEs 在您的 GraphQL-schema 中完成代码。
 
     php artisan lighthouse:ide-helper
 
-This will create the following files:
+这将创建以下文件：
 
-- `schema-directives.graphql`: Schema definitions for directives you can use in your schema
-- `programmatic-types.graphql`: Schema definitions for programmatically registered types, if you have any
-- `_lighthouse_ide_helper.php`: Class definitions for some magical PHP, such as the `TestResponse` mixin
+-   `schema-directives.graphql`: 可在架构中使用的指令的架构定义
 
-A great way to keep up to date with your current version of Lighthouse
-is to add this script to your `composer.json`:
+-   `programmatic-types.graphql`: 以编程方式注册的类型的架构定义（如果有
+
+-   `_lighthouse_ide_helper.php`: 一些神奇 PHP 的类定义，比如 `TestResponse` 混合
+
+使用当前版本的 Lighthouse 保持最新状态的好方法是将此脚本添加到您的 `composer.json` 中：
 
 ```json
 "scripts": {
@@ -51,61 +51,59 @@ is to add this script to your `composer.json`:
 
 ## interface
 
-Create a class for a GraphQL interface type.
+为 GraphQL 接口类型创建一个类。
 
     php artisan lighthouse:interface <name>
 
 ## mutation
 
-Create a class for a single field on the root Mutation type.
+为 root Mutation 类型上的单个字段创建一个类。
 
     php artisan lighthouse:mutation <name>
 
-Use the option `--full` to include the seldom needed resolver arguments `$context` and `$resolveInfo`.
+使用 `--full` 选项可以包含不需要的 resolver 参数，如 `$context` 和 `$solveInfo` 。
 
 ## print-schema
 
-Compile the GraphQL schema and print the result.
+编译最后的 GraphQL 模式并打印结果。
 
     php artisan lighthouse:print-schema
 
-This can be quite useful, as the root `.graphql` files do not necessarily
-contains the whole schema. Schema imports, native PHP types and schema manipulation
-may influence the final schema.
+这可能非常有用，因为 root `.graphql` 文件不一定包含整个模式（schema）。模式（schema）导入、原生 PHP 类型和模式（schema）操作可能会影响最终模式（schema）。
 
 Use the `-W` / `--write` option to output the schema to the default file storage
 (usually `storage/app`) as `lighthouse-schema.graphql`.
 
-You can output your schema in JSON format by using the `--json` flag.
+您可以使用 `--json` 标志以 JSON 格式输出您的模式（schema）。
 
 ## query
 
-Create a class for a single field on the root Query type.
+为 root Query 类型的单个字段创建一个类。
 
     php artisan lighthouse:query <name>
 
-Use the option `--full` to include the seldom needed resolver arguments `$context` and `$resolveInfo`.
+使用 `--full` 选项可以包含不需要的 resolver 参数，如 `$context` 和 `$solveInfo` 。
 
 ## scalar
 
-Create a class for a GraphQL scalar type.
+为 GraphQL scalar 类型创建一个类。
 
     php artisan lighthouse:scalar <name>
 
 ## subscription
 
-Create a class for a single field on the root Subscription type.
+为 root Subscription 类型上的单个字段创建类。
 
     php artisan lighthouse:subscription <name>
 
 ## union
 
-Create a class for a GraphQL union type.
+为 GraphQL union 类型创建一个类。
 
     php artisan lighthouse:union <name>
 
 ## validate-schema
 
-Validate the GraphQL schema definition.
+验证 GraphQL schema 定义。
 
     php artisan lighthouse:validate-schema
