@@ -33,14 +33,14 @@ class PaginationArgs
         $instance = new static();
 
         if ($paginationType->isConnection()) {
-            $instance->first = $args['first'];
-            $instance->page = self::calculateCurrentPage(
+            $instance->first = $args['first'] ?? $args['count'];
+            $instance->page  = self::calculateCurrentPage(
                 $instance->first,
                 Cursor::decode($args)
             );
         } else {
-            $instance->first = $args['first'];
-            $instance->page = Arr::get($args, 'page', 1);
+            $instance->first = $args['first'] ?? $args['count'];
+            $instance->page  = Arr::get($args, 'page', 1);
         }
 
         if ($instance->first <= 0) {
@@ -78,8 +78,8 @@ class PaginationArgs
     protected static function calculateCurrentPage(int $first, int $after, int $defaultPage = 1): int
     {
         return $first && $after
-            ? (int) floor(($first + $after) / $first)
-            : $defaultPage;
+        ? (int) floor(($first + $after) / $first)
+        : $defaultPage;
     }
 
     /**

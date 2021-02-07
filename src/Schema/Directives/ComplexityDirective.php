@@ -11,7 +11,7 @@ class ComplexityDirective extends BaseDirective implements FieldMiddleware
 {
     public static function definition(): string
     {
-        return /** @lang GraphQL */ <<<'GRAPHQL'
+        return /** @lang GraphQL */<<<'GRAPHQL'
 """
 Customize the calculation of a fields complexity score before execution.
 """
@@ -40,7 +40,7 @@ GRAPHQL;
         } else {
             $resolver = static function (int $childrenComplexity, array $args): int {
                 /** @var int $complexity */
-                $complexity = $args['first'] ?? 1;
+                $complexity = $args['first'] ?? $args['count'] ?? 1;
 
                 return $childrenComplexity * $complexity;
             };

@@ -1,7 +1,7 @@
 {
-    "name": "nuwave/lighthouse",
+    "name": "haxibiao/lighthouse",
     "type": "library",
-    "description": "A framework for serving GraphQL from Laravel",
+    "description": "临时兼容haxibiao开发需求的lighthouse版本",
     "keywords": [
         "graphql",
         "laravel",
