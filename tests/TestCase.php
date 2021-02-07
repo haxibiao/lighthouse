@@ -7,12 +7,14 @@ use GraphQL\Type\Schema;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Laravel\Scout\ScoutServiceProvider;
+use Illuminate\Redis\RedisServiceProvider;
+use Laravel\Scout\ScoutServiceProvider as LaravelScoutServiceProvider;
 use Nuwave\Lighthouse\GlobalId\GlobalIdServiceProvider;
 use Nuwave\Lighthouse\GraphQL;
 use Nuwave\Lighthouse\LighthouseServiceProvider;
 use Nuwave\Lighthouse\OrderBy\OrderByServiceProvider;
 use Nuwave\Lighthouse\Pagination\PaginationServiceProvider;
+use Nuwave\Lighthouse\Scout\ScoutServiceProvider as LighthouseScoutServiceProvider;
 use Nuwave\Lighthouse\SoftDeletes\SoftDeletesServiceProvider;
 use Nuwave\Lighthouse\Support\AppVersion;
 use Nuwave\Lighthouse\Testing\MakesGraphQLRequests;
@@ -39,11 +41,11 @@ type Query {
 
 GRAPHQL;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
-        if (! isset($this->schema)) {
+        if ($this->schema === null) {
             $this->schema = self::PLACEHOLDER_QUERY;
         }
 
@@ -60,11 +62,13 @@ GRAPHQL;
     {
         return [
             AuthServiceProvider::class,
-            ScoutServiceProvider::class,
+            LaravelScoutServiceProvider::class,
+            RedisServiceProvider::class,
 
             // Lighthouse's own
             LighthouseServiceProvider::class,
             GlobalIdServiceProvider::class,
+            LighthouseScoutServiceProvider::class,
             OrderByServiceProvider::class,
             PaginationServiceProvider::class,
             SoftDeletesServiceProvider::class,
@@ -118,25 +122,33 @@ GRAPHQL;
             ],
         ]);
 
-        $config->set(
-            'lighthouse.debug',
+        $config->set('app.debug', true);
+        $config->set('lighthouse.debug',
             DebugFlag::INCLUDE_DEBUG_MESSAGE
             | DebugFlag::INCLUDE_TRACE
             // | Debug::RETHROW_INTERNAL_EXCEPTIONS
             | DebugFlag::RETHROW_UNSAFE_EXCEPTIONS
         );
 
-        $config->set(
-            'lighthouse.subscriptions',
-            [
-                'storage' => 'array',
-                'broadcaster' => 'log',
-            ]
-        );
-
         $config->set('lighthouse.guard', null);
 
-        $config->set('app.debug', true);
+        $config->set('lighthouse.subscriptions', [
+            'version' => 1,
+            'storage' => 'array',
+            'broadcaster' => 'log',
+        ]);
+
+        $config->set('database.redis.default', [
+            'url' => env('LIGHTHOUSE_TEST_REDIS_URL'),
+            'host' => env('LIGHTHOUSE_TEST_REDIS_HOST', 'redis'),
+            'password' => env('LIGHTHOUSE_TEST_REDIS_PASSWORD'),
+            'port' => env('LIGHTHOUSE_TEST_REDIS_PORT', '6379'),
+            'database' => env('LIGHTHOUSE_TEST_REDIS_DB', '0'),
+        ]);
+
+        $config->set('database.redis.options', [
+            'prefix' => 'lighthouse-test-',
+        ]);
 
         // Defaults to "algolia", which is not needed in our test setup
         $config->set('scout.driver', null);

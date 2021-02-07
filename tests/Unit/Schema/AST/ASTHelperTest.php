@@ -27,9 +27,7 @@ class ASTHelperTest extends TestCase
         $this->expectException(DefinitionException::class);
 
         $objectType1->fields = ASTHelper::mergeUniqueNodeList(
-            // @phpstan-ignore-next-line
             $objectType1->fields,
-            // @phpstan-ignore-next-line
             $objectType2->fields
         );
     }
@@ -51,9 +49,7 @@ class ASTHelperTest extends TestCase
         ');
 
         $objectType1->fields = ASTHelper::mergeUniqueNodeList(
-            // @phpstan-ignore-next-line
             $objectType1->fields,
-            // @phpstan-ignore-next-line
             $objectType2->fields,
             true
         );
@@ -154,7 +150,7 @@ class ASTHelperTest extends TestCase
     {
         $object = Parser::objectTypeDefinition(/** @lang GraphQL */ '
         type Query {
-            foo: Int @guard(with: "api")
+            foo: Int @guard(with: ["api"])
             bar: String
         }
         ');
@@ -167,7 +163,7 @@ class ASTHelperTest extends TestCase
         $guardOnFooArguments = $object->fields[0]->directives[0];
         $fieldGuard = ASTHelper::directiveArgValue($guardOnFooArguments, 'with');
 
-        $this->assertSame('api', $fieldGuard);
+        $this->assertSame(['api'], $fieldGuard);
         $this->assertSame(
             'guard',
             $object->fields[1]->directives[0]->name->value

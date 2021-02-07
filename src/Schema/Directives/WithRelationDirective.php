@@ -6,37 +6,58 @@ use Closure;
 use GraphQL\Deferred;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
-use Nuwave\Lighthouse\Execution\DataLoader\BatchLoader;
-use Nuwave\Lighthouse\Execution\Utils\ModelKey;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Nuwave\Lighthouse\Execution\DataLoader\BatchLoaderRegistry;
+use Nuwave\Lighthouse\Execution\DataLoader\RelationBatchLoader;
+use Nuwave\Lighthouse\Execution\DataLoader\RelationLoader;
 use Nuwave\Lighthouse\Schema\Values\FieldValue;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
 
 abstract class WithRelationDirective extends BaseDirective
 {
     /**
-     * The fully-qualified class name of the batch loader to use.
-     *
-     * @return class-string<\Nuwave\Lighthouse\Execution\DataLoader\BatchLoader>
-     */
-    abstract protected function batchLoaderClass(): string;
-
-    /**
      * The name of the relation to be loaded.
      */
     abstract protected function relationName(): string;
+
+    abstract protected function relationLoader(ResolveInfo $resolveInfo): RelationLoader;
 
     /**
      * Eager load a relation on the parent instance.
      */
     public function handleField(FieldValue $fieldValue, Closure $next): FieldValue
     {
-        return $next(
-            $fieldValue->setResolver(
-                $this->deferredRelationResolver(
-                    $fieldValue->getResolver()
-                )
-            )
+        $previousResolver = $fieldValue->getResolver();
+
+        $fieldValue->setResolver(
+            function (Model $parent, array $args, GraphQLContext $context, ResolveInfo $resolveInfo) use ($previousResolver) {
+                return $this
+                    ->loadRelation($parent, $resolveInfo)
+                    ->then(function () use ($previousResolver, $parent, $args, $context, $resolveInfo) {
+                        return $previousResolver($parent, $args, $context, $resolveInfo);
+                    });
+            }
         );
+
+        return $next($fieldValue);
+    }
+
+    protected function loadRelation(Model $parent, ResolveInfo $resolveInfo): Deferred
+    {
+        $relationName = $this->relationName();
+
+        // There might be multiple directives on the same field, so we differentiate by relation too
+        $uniquePath = $resolveInfo->path;
+        $uniquePath [] = $relationName;
+
+        /** @var \Nuwave\Lighthouse\Execution\DataLoader\RelationBatchLoader $relationBatchLoader */
+        $relationBatchLoader = BatchLoaderRegistry::instance(RelationBatchLoader::class, $uniquePath);
+
+        if (! $relationBatchLoader->hasRelationLoader()) {
+            $relationBatchLoader->registerRelationLoader($this->relationLoader($resolveInfo), $relationName);
+        }
+
+        return $relationBatchLoader->load($parent);
     }
 
     /**
@@ -44,49 +65,15 @@ abstract class WithRelationDirective extends BaseDirective
      */
     protected function decorateBuilder(ResolveInfo $resolveInfo): Closure
     {
-        return function ($query) use ($resolveInfo) {
+        return function (object $builder) use ($resolveInfo): void {
+            if ($builder instanceof Relation) {
+                $builder = $builder->getQuery();
+            }
+
             $resolveInfo->argumentSet->enhanceBuilder(
-                $query,
+                $builder,
                 $this->directiveArgValue('scopes', [])
             );
         };
-    }
-
-    /**
-     * Return a new deferred resolver.
-     */
-    protected function deferredRelationResolver(callable $resolver): Closure
-    {
-        return function (?Model $parent, array $args, GraphQLContext $context, ResolveInfo $resolveInfo) use ($resolver): Deferred {
-            return new Deferred(function () use ($resolver, $parent, $args, $context, $resolveInfo) {
-                if (is_null($parent)) {
-                    return $resolver($parent, $args, $context, $resolveInfo);
-                }
-
-                return $this->loader($resolveInfo)
-                    ->load(
-                        ModelKey::build($parent),
-                        ['parent' => $parent]
-                    )
-                    ->then(function () use ($resolver, $parent, $args, $context, $resolveInfo) {
-                        return $resolver($parent, $args, $context, $resolveInfo);
-                    });
-            });
-        };
-    }
-
-    /**
-     * Create an instance of RelationBatchLoader loader.
-     */
-    protected function loader(ResolveInfo $resolveInfo): BatchLoader
-    {
-        return BatchLoader::instance(
-            $this->batchLoaderClass(),
-            $resolveInfo->path,
-            [
-                'relationName' => $this->relationName(),
-                'decorateBuilder' => $this->decorateBuilder($resolveInfo),
-            ]
-        );
     }
 }

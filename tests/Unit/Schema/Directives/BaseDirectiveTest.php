@@ -151,20 +151,36 @@ class BaseDirectiveTest extends TestCase
         );
     }
 
-    protected function constructFieldDirective(string $definitionNode): BaseDirective
+    public function testGetsArgumentFromDirective(): void
     {
-        return $this->constructTestDirective(
-            Parser::fieldDefinition($definitionNode)
+        $directive = $this->constructFieldDirective('foo: ID @dummy(argName:"argValue", argName2:"argValue2")');
+
+        $this->assertSame(
+            'argValue',
+            // @phpstan-ignore-next-line protected method is called via wrapper below
+            $directive->directiveArgValue('argName')
+        );
+
+        $this->assertSame(
+            'argValue2',
+            // @phpstan-ignore-next-line protected method is called via wrapper below
+            $directive->directiveArgValue('argName2')
         );
     }
 
-    /**
-     * Get a testable instance of the BaseDirective that allows calling protected methods.
-     *
-     * @param  \GraphQL\Language\AST\Node  $definitionNode
-     */
-    protected function constructTestDirective($definitionNode): BaseDirective
+    public function testTwoArgumentsWithSameName(): void
     {
+        $directive = $this->constructFieldDirective('foo: ID @dummy(argName:"argValue", argName:"argValue2")');
+
+        $this->expectException(DefinitionException::class);
+        // @phpstan-ignore-next-line protected method is called via wrapper below
+        $directive->directiveArgValue('argName');
+    }
+
+    protected function constructFieldDirective(string $definition): BaseDirective
+    {
+        $fieldDefinition = Parser::fieldDefinition($definition);
+
         $directive = new class extends BaseDirective {
             public static function definition(): string
             {
@@ -184,8 +200,8 @@ class BaseDirectiveTest extends TestCase
         };
 
         $directive->hydrate(
-            $definitionNode->directives[0],
-            $definitionNode
+            $fieldDefinition->directives[0],
+            $fieldDefinition
         );
 
         return $directive;

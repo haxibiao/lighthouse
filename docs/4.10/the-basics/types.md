@@ -1,6 +1,6 @@
 # 类型 (Types)
 
-GraphQL模式由类型组成。本节描述了不同类型的集合，以及如何定义它们来使用 Lighthouse。有关类型的更深入的参考资料，请参阅 [GraphQL 文档](https://graphql.org/learn/schema/)
+GraphQL 模式由类型组成。本节描述了不同类型的集合，以及如何定义它们来使用 Lighthouse。有关类型的更深入的参考资料，请参阅 [GraphQL 文档](https://graphql.org/learn/schema/)
 
 ## 对象类型 (Object Type)
 
@@ -8,16 +8,16 @@ GraphQL模式由类型组成。本节描述了不同类型的集合，以及如�
 
 ```graphql
 type User {
-  id: ID!
-  name: String!
-  email: String!
-  created_at: String!
-  updated_at: String
+    id: ID!
+    name: String!
+    email: String!
+    created_at: String!
+    updated_at: String
 }
 
 type Query {
-  users: [User!]!
-  user(id: ID!): User
+    users: [User!]!
+    user(id: ID!): User
 }
 ```
 
@@ -34,7 +34,7 @@ Lighthouse 提供了一些与 Laravel 一些变量类型相对应的 Scalar ，�
 scalar ZipCode
 
 type User {
-  zipCode: ZipCode
+    zipCode: ZipCode
 }
 ```
 
@@ -58,9 +58,9 @@ scalar Email @scalar(class: "MLL\\GraphQLScalars\\Email")
 
 ```graphql
 enum EmploymentStatus {
-  INTERN @enum(value: 0)
-  EMPLOYEE @enum(value: 1)
-  TERMINATED @enum(value: 2)
+    INTERN @enum(value: 0)
+    EMPLOYEE @enum(value: 1)
+    TERMINATED @enum(value: 2)
 }
 ```
 
@@ -68,13 +68,13 @@ enum EmploymentStatus {
 
 ```graphql
 type Employee {
-  id: ID!
-  name: String
-  status: EmploymentStatus!
+    id: ID!
+    name: String
+    status: EmploymentStatus!
 }
 
 type Query {
-  employees: [Employee!]! @all
+    employees: [Employee!]! @all
 }
 ```
 
@@ -92,22 +92,22 @@ return [
 
 ```graphql
 {
-  employees {
-    name
-    status
-  }
+    employees {
+        name
+        status
+    }
 }
 ```
 
 ```json
 {
-  "data": {
-    "employees": [
-      {"name": "Hans", "status": "INTERN"},
-      {"name": "Pamela", "status": "EMPLOYEE"},
-      {"name": "Gerhard", "status": "TERMINATED"}
-    ]
-  }
+    "data": {
+        "employees": [
+            { "name": "Hans", "status": "INTERN" },
+            { "name": "Pamela", "status": "EMPLOYEE" },
+            { "name": "Gerhard", "status": "TERMINATED" }
+        ]
+    }
 }
 ```
 
@@ -115,17 +115,20 @@ return [
 
 ```graphql
 enum Role {
-  ADMIN
+    ADMIN
 }
 ```
 
-假如字段的PHP内部值 `ADMIN` 那么就是 `string('ADMIN')`.
+假如字段的 PHP 内部值 `ADMIN` 那么就是 `string('ADMIN')`.
 
 ### 原生 PHP 定义 (Native PHP definition)
 
 如果希望重用 PHP 中的 enum 定义或常量，还可以 [通过 TypeRegistry](../digging-deeper/adding-types-programmatically.md#native-php-types) 来注册一个原生 PHP enum 类型。
 
-只需定义一个[枚举类型 (EnumType)](http://webonyx.github.io/graphql-php/type-system/enum-types/) 并注册它: 
+只需定义一个[枚举类型 (EnumType)](http://webonyx.github.io/graphql-php/type-system/enum-types/) 并注册它:
+
+Just define a [EnumType](https://webonyx.github.io/graphql-php/type-system/enum-types/) and
+register it:
 
 ```php
 use GraphQL\Type\Definition\EnumType;
@@ -228,19 +231,19 @@ Input 类型可用于描述字段参数的复杂对象。注意，虽然它们�
 
 ```graphql
 input CreateUserInput {
-  name: String!
-  email: String
+    name: String!
+    email: String
 }
 
 type User {
-  id: ID!
-  name: String!
-  email: String
+    id: ID!
+    name: String!
+    email: String
 }
 
 type Mutation {
-  createUser(input: CreateUserInput! @spread): User @create
-} 
+    createUser(input: CreateUserInput! @spread): User @create
+}
 ```
 
 ## 接口 (Interface)
@@ -249,7 +252,7 @@ GraphQL `interface` 类型类似于 PHP `Interface` 。它定义了一组所有�
 
 ```graphql
 interface Named {
-  name: String!
+    name: String!
 }
 ```
 
@@ -257,8 +260,8 @@ interface Named {
 
 ```graphql
 type User implements Named {
-  id: ID!
-  name: String!
+    id: ID!
+    name: String!
 }
 ```
 
@@ -266,7 +269,7 @@ type User implements Named {
 
 ```graphql
 type User implements Named {
-  id: ID!
+    id: ID!
 }
 ```
 
@@ -277,6 +280,8 @@ type User implements Named {
 您还可以提供自定义类型解析器。运行 `php artisan lighthouse:interface <Interface name>` 来创建一个自定义接口类。它被自动放到默认的名称空间中，Lighthouse 可以自己发现它
 
 在 [GraphQL 参考资料](https://graphql.org/learn/schema/#interfaces) 和 [graphql-php 文档](http://webonyx.github.io/graphql-php/type-system/interfaces/) 中了解更多
+Read more about them in the [GraphQL Reference](https://graphql.org/learn/schema/#interfaces) and the
+[docs for graphql-php](https://webonyx.github.io/graphql-php/type-system/interfaces/)
 
 ## Union
 
@@ -284,20 +289,21 @@ Union 是一种抽象类型，它只是枚举其他对象类型。
 它们与接口相似，因为它们可以返回不同的类型，但是它们不能定义字段。
 
 ```graphql
-union Person
-  = User
-  | Employee
+union Person = User | Employee
 
 type User {
-  id: ID!
+    id: ID!
 }
 
 type Employee {
-  employeeId: ID!
+    employeeId: ID!
 }
 ```
 
-就像接口一样，您需要一种基于已解析值来确定Union的具体对象类型的方法。如果默认类型解析器不适合您，那么使用 `php artisan lighthouse:union <Union name>` 定义自己的解析器。
+就像接口一样，您需要一种基于已解析值来确定 Union 的具体对象类型的方法。如果默认类型解析器不适合您，那么使用 `php artisan lighthouse:union <Union name>` 定义自己的解析器。
 它被自动放到默认的名称空间中，Lighthouse 可以自己发现它。
 
 去 [GraphQL 参考资料](https://graphql.org/learn/schema/#interfaces) 和 [graphql-php 文档](http://webonyx.github.io/graphql-php/type-system/interfaces/) 中可以了解更多信息
+
+Read more about them in the [GraphQL Reference](https://graphql.org/learn/schema/#union-types) and the
+[docs for graphql-php](https://webonyx.github.io/graphql-php/type-system/unions/)

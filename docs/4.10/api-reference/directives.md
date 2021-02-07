@@ -1800,6 +1800,7 @@ type User {
 ```graphql
 """
 Register a type for Relay's global object identification.
+
 When used without any arguments, Lighthouse will attempt
 to resolve the type through a model with the same name.
 """
@@ -2542,7 +2543,7 @@ mutation {
 [
     'id' => 12,
     'title' => 'My awesome title',
-    'imageUrl' = 'http://some.site/image.jpg',
+    'imageUrl' = 'https://some.site/image.jpg',
 ]
 ```
 

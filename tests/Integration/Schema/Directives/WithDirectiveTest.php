@@ -2,6 +2,7 @@
 
 namespace Tests\Integration\Schema\Directives;
 
+use Nuwave\Lighthouse\Exceptions\DefinitionException;
 use Tests\DBTestCase;
 use Tests\Utils\Models\Activity;
 use Tests\Utils\Models\Comment;
@@ -232,5 +233,68 @@ class WithDirectiveTest extends DBTestCase
                 ],
             ],
         ]);
+    }
+
+    public function testEagerLoadsMultipleRelationsAtOnce(): void
+    {
+        $this->schema = /** @lang GraphQL */ '
+        type Query {
+            users: User
+                @first
+        }
+
+        type User {
+            tasksAndPostsCommentsLoaded: Boolean!
+                @with(relation: "tasks")
+                @with(relation: "posts.comments")
+                @method
+        }
+        ';
+
+        /** @var \Tests\Utils\Models\User $user */
+        $user = factory(User::class)->create();
+        factory(Task::class, 3)->create([
+            'user_id' => $user->getKey(),
+        ]);
+
+        $posts = factory(Post::class, 2)->create([
+            'user_id' => $user->id,
+        ]);
+        foreach ($posts as $post) {
+            factory(Comment::class)->create([
+                'post_id' => $post->id,
+                'user_id' => $user->id,
+            ]);
+        }
+
+        // Sanity check
+        $this->assertFalse(
+            $user->tasksAndPostsCommentsLoaded()
+        );
+
+        $this->graphQL(/** @lang GraphQL */ '
+        {
+            users {
+                tasksAndPostsCommentsLoaded
+            }
+        }
+        ')->assertJson([
+            'data' => [
+                'users' => [
+                    'tasksAndPostsCommentsLoaded' => true,
+                ],
+            ],
+        ]);
+    }
+
+    public function testWithDirectiveOnRootFieldThrows(): void
+    {
+        $this->expectException(DefinitionException::class);
+
+        $this->buildSchema(/** @lang GraphQL */ '
+        type Query {
+            foo: Int @with(relation: "tasks")
+        }
+        ');
     }
 }

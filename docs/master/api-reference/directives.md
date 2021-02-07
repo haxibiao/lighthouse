@@ -279,7 +279,7 @@ type Mutation {
 
 ```graphql
 """
-Use an argument to modify the query builder for a field.
+Manipulate the query builder with a method.
 """
 directive @builder(
   """
@@ -288,33 +288,41 @@ directive @builder(
   If you pass only a class name, the method name defaults to `__invoke`.
   """
   method: String!
-) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+  """
+  Pass a value to the method as the second argument after the query builder.
+  Only used when the directive is added on a field.
+  """
+  value: Mixed
+) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 ```
 
 You must point to a `method` which will receive the builder instance
-and the argument value, and can apply additional constraints to the query.
+and can apply additional constraints to the query.
+
+When used on an argument, the value is supplied as the second parameter to the method.
+When used on a field, the value argument inside the directive is applied as the second
+parameter to the method.
 
 ```graphql
 type Query {
     users(
-        limit: Int @builder(method: "App\MyClass@limit")
+        minimumHighscore: Int @builder(method: "App\MyClass@minimumHighscore")
     ): [User!]! @all
+    highrankedUsers: [User!]! @all @builder(method: "App\MyClass@minimumHighscore", value: 1000)
 }
 ```
 
 ```php
+use Illuminate\Database\Eloquent\Builder;
+
 class MyClass
 {
-
-     * Add a limit constrained upon the query.
-     *
-     * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder  $builder
-     * @param  mixed  $value
-     * @return \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder
-     */
-    public function limit($builder, int $value)
+    public function limit(Builder $builder, int $minimumHighscore): Builder
     {
-        return $builder->limit($value);
+        return $builder->whereHas('game', static function (Builder $builder) use ($minimumHighscore): void {
+            $builder->where('score', '>', $minimumHighscore);
+        });
     }
 }
 ```
@@ -461,7 +469,7 @@ directive @complexity(
 ) on FIELD_DEFINITION
 ```
 
-[Read More about query complexity analysis](http://webonyx.github.io/graphql-php/security/#query-complexity-analysis)
+[Read More about query complexity analysis](https://webonyx.github.io/graphql-php/security/#query-complexity-analysis)
 
 ```graphql
 type Query {
@@ -893,15 +901,23 @@ is an identical string. [Read more about enum types](../the-basics/types.md#enum
 
 ```graphql
 """
-Use the client given value to add an equal conditional to a database query.
+Add an equal conditional to a database query.
 """
 directive @eq(
   """
   Specify the database column to compare.
-  Only required if database column has a different name than the attribute in your schema.
+  Required if the directive is:
+  - used on an argument and the database column has a different name
+  - used on a field
   """
   key: String
-) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+  """
+  Provide a value to compare against.
+  Only required when this directive is used on a field.
+  """
+  value: Mixed
+) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 ```
 
 ```graphql
@@ -916,6 +932,14 @@ pass the actual column name as the `key`.
 ```graphql
 type User {
   posts(category: String @eq(key: "cat")): [Post!]! @hasMany
+}
+```
+
+You can also use this on a field to define a default filter:
+
+```graphql
+type User {
+  sportPosts: [Post!]! @hasMany @eq(key: "category", value: "sport")
 }
 ```
 
@@ -1381,6 +1405,46 @@ type Post {
 }
 ```
 
+## @limit
+
+```graphql
+"""
+Allow clients to specify the maximum number of results to return.
+"""
+directive @limit on ARGUMENT_DEFINITION
+```
+
+Place this on any argument to a field that returns a list of results.
+
+```graphql
+type Query {
+  users(limit: Int @limit): [User!]!
+}
+```
+
+Lighthouse will return at most the number of results that the client requested.
+
+```graphql
+{
+  users(limit: 5) {
+    name
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "users": [
+      { "name": "Never" },
+      { "name": "more" },
+      { "name": "than" },
+      { "name": "5" }
+    ]
+  }
+}
+```
+
 ## @method
 
 ```graphql
@@ -1696,15 +1760,19 @@ directive @node(
   Reference to a function that receives the decoded `id` and returns a result.
   Consists of two parts: a class name and a method name, seperated by an `@` symbol.
   If you pass only a class name, the method name defaults to `__invoke`.
+
+  Mutually exclusive with the `model` argument.
   """
   resolver: String
 
   """
   Specify the class name of the model to use.
   This is only needed when the default model detection does not work.
+
+  Mutually exclusive with the `model` argument.
   """
   model: String
-) on FIELD_DEFINITION
+) on OBJECT
 ```
 
 Lighthouse defaults to resolving types through the underlying model,
@@ -1772,8 +1840,8 @@ directive @orderBy(
   """
   Restrict the allowed column names to a well-defined list.
   This improves introspection capabilities and security.
-  If not given, the column names can be passed as a String by clients.
   Mutually exclusive with the `columnsEnum` argument.
+  Only used when the directive is added on an argument.
   """
   columns: [String!]
 
@@ -1781,13 +1849,43 @@ directive @orderBy(
   Use an existing enumeration type to restrict the allowed columns to a predefined list.
   This allowes you to re-use the same enum for multiple fields.
   Mutually exclusive with the `columns` argument.
+  Only used when the directive is added on an argument.
   """
   columnsEnum: String
-) on ARGUMENT_DEFINITION
+
+  """
+  The database column for which the order by clause will be applied on.
+  Only used when the directive is added on a field.
+  """
+  column: String
+
+  """
+  The direction of the order by clause.
+  Only used when the directive is added on a field.
+  """
+  direction: OrderByDirection = ASC
+) on ARGUMENT_DEFINITION | FIELD_DEFINITION
+
+"""
+Options for the `direction` argument on `@orderBy`.
+"""
+enum OrderByDirection {
+  """
+  Sort in ascending order.
+  """
+  ASC
+
+  """
+  Sort in descending order.
+  """
+  DESC
+}
 ```
 
-Use it on a field argument of an Eloquent query. The type of the argument
-can be left blank as `_` , as it will be automatically generated.
+### Client Controlled Ordering
+
+To enable clients to control the ordering, use this directive on an argument of
+a field that is backed by a database query.
 
 ```graphql
 type Query {
@@ -1795,8 +1893,9 @@ type Query {
 }
 ```
 
-Lighthouse will automatically generate an input that takes enumerated column names,
-together with the `SortOrder` enum, and add that to your schema. Here is how it looks:
+The type of the argument can be left blank as `_` ,
+as Lighthouse will automatically generate an input that takes enumerated column names,
+together with the `SortOrder` enum, and add that to your schema:
 
 ```graphql
 "Allows ordering a list of records."
@@ -1824,8 +1923,7 @@ enum SortOrder {
 }
 ```
 
-If you want to re-use a list of allowed columns, you can define your own enumeration type and use the `columnsEnum` argument instead of `columns`.
-Here's an example of how you could define it in your schema:
+To re-use a list of allowed columns, define your own enumeration type and use the `columnsEnum` argument instead of `columns`:
 
 ```graphql
 type Query {
@@ -1858,28 +1956,17 @@ Querying a field that has an `orderBy` argument looks like this:
 
 You may pass more than one sorting option to add a secondary ordering.
 
-The [@orderBy](#orderby) directive can also be applied inside an input field definition
-when used in conjunction with the [@spread](#spread) directive.
+### Predefined Ordering
+
+To predefine a default order for your field, use this directive on a field:
 
 ```graphql
 type Query {
-  posts(filter: PostFilterInput @spread): Posts
-}
-
-input PostFilterInput {
-  orderBy: [OrderByClause!] @orderBy
+  latestUsers: [User!]! @all @orderBy(column: "created_at", direction: "DESC")
 }
 ```
 
-This can be queried like this:
-
-```graphql
-{
-  posts(filter: { orderBy: [{ column: "posted_at", order: ASC }] }) {
-    title
-  }
-}
-```
+Clients won't have to pass any arguments to the field and still receive ordered results by default.
 
 ## @paginate
 
@@ -2193,11 +2280,24 @@ directive @rules(
 
   """
   Specify the messages to return if the validators fail.
-  Specified as an input object that maps rules to messages,
-  e.g. { email: "Must be a valid email", max: "The input was too long" }
   """
-  messages: RulesMessageMap
+  messages: [RulesMessage!]
 ) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""
+Input for the `messages` argument of `@rules`.
+"""
+input RulesMessage {
+  """
+  Name of the rule, e.g. `"email"`.
+  """
+  rule: String!
+
+  """
+  Message to display if the rule fails, e.g. `"Must be a valid email"`.
+  """
+  message: String!
+}
 ```
 
 For example, this rule ensures that users pass a valid 2 character country code:
@@ -2231,11 +2331,24 @@ directive @rulesForArray(
 
   """
   Specify the messages to return if the validators fail.
-  Specified as an input object that maps rules to messages,
-  e.g. { email: "Must be a valid email", max: "The input was too long" }
   """
-  messages: RulesMessageMap
+  messages: [RulesForArrayMessage!]
 ) repeatable on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""
+Input for the `messages` argument of `@rulesForArray`.
+"""
+input RulesForArrayMessage {
+  """
+  Name of the rule, e.g. `"email"`.
+  """
+  rule: String!
+
+  """
+  Message to display if the rule fails, e.g. `"Must be a valid email"`.
+  """
+  message: String!
+}
 ```
 
 This is typically used to assert a certain number of elements is given in a list.
@@ -2267,7 +2380,7 @@ directive @scalar(
 If you follow the namespace convention, you do not need this directive.
 Lighthouse looks into your configured scalar namespace for a class with the same name.
 
-[Learn how to implement your own scalar.](http://webonyx.github.io/graphql-php/type-system/scalar-types/)
+[Learn how to implement your own scalar.](https://webonyx.github.io/graphql-php/type-system/scalar-types/)
 
 ```graphql
 scalar DateTime @scalar(class: "DateTimeScalar")
@@ -2327,9 +2440,11 @@ type Query {
 }
 ```
 
-The [@search](#search) directive does not work in combination with other filter directives.
-The usual query builder `Eloquent\Builder` will be replaced by a `Scout\Builder`,
-which does not support the same methods and operations.
+The [@search](#search) directive only works in combination with filter directives that
+implement `\Nuwave\Lighthouse\Scout\ScoutBuilderDirective`:
+
+- [@eq](#eq)
+- [@softDeletes](#softdeletes)
 
 Normally the search will be performed using the index specified by the model's `searchableAs` method.
 However, in some situation a custom index might be needed, this can be achieved by using the argument `within`.
@@ -2430,7 +2545,7 @@ mutation {
     id: 12
     input: {
       title: "My awesome title"
-      content: { imageUrl: "http://some.site/image.jpg" }
+      content: { imageUrl: "https://some.site/image.jpg" }
     }
   ) {
     id
@@ -2445,7 +2560,7 @@ they are passed along to the resolver:
 [
     'id' => 12,
     'title' => 'My awesome title',
-    'imageUrl' = 'http://some.site/image.jpg',
+    'imageUrl' = 'https://some.site/image.jpg',
 ]
 ```
 
@@ -2476,6 +2591,41 @@ type Subscription {
     @subscription(class: "App\\GraphQL\\Blog\\PostUpdatedSubscription")
 }
 ```
+
+## @throttle
+
+```graphql
+"""
+Sets rate limit to access the field. Does the same as ThrottleRequests Laravel Middleware.
+"""
+directive @throttle(
+  """
+  Named preconfigured rate limiter. Requires Larave 8.x or later.
+  """
+  name: String
+
+  """
+  Maximum number of attempts in a specified time interval.
+  """
+  maxAttempts: Int = 60
+
+  """
+  Time in minutes to reset attempts.
+  """
+  decayMinutes: Float = 1.0
+
+  """
+  Prefix to distinguish several field groups.
+  """
+  prefix: String
+) on FIELD_DEFINITION
+```
+
+Allows use Laravel throttling on a per-field basis. See [Laravel doc](https://laravel.com/docs/routing#rate-limiting)
+on how to configure named limiters.
+
+Limiters that return `response` are not supported. Hashes are different from the ones of Laravel, so one can't use
+one named limiter to limit both Laravel route and GraphQL field.
 
 ## @trashed
 

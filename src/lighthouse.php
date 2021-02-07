@@ -135,7 +135,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Control how Lighthouse handles security related query validation.
-    | Read more at http://webonyx.github.io/graphql-php/security/
+    | Read more at https://webonyx.github.io/graphql-php/security/
     |
     */
 
@@ -174,7 +174,7 @@ return [
     | Debug
     |--------------------------------------------------------------------------
     |
-    | Control the debug level as described in http://webonyx.github.io/graphql-php/error-handling/
+    | Control the debug level as described in https://webonyx.github.io/graphql-php/error-handling/
     | Debugging is only applied if the global Laravel debug config is set to true.
     |
     | When you set this value through an environment variable, use the following reference table:
@@ -356,6 +356,12 @@ return [
                 'routes' => \Nuwave\Lighthouse\Subscriptions\SubscriptionRouter::class.'@echoRoutes',
             ],
         ],
+
+        /*
+         * Controls the format of the extensions response.
+         * Allowed values: 1, 2
+         */
+        'version' => env('LIGHTHOUSE_SUBSCRIPTION_VERSION', 1),
     ],
 
     /*

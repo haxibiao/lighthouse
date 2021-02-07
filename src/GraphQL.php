@@ -19,6 +19,7 @@ use Nuwave\Lighthouse\Events\BuildExtensionsResponse;
 use Nuwave\Lighthouse\Events\ManipulateResult;
 use Nuwave\Lighthouse\Events\StartExecution;
 use Nuwave\Lighthouse\Execution\DataLoader\BatchLoader;
+use Nuwave\Lighthouse\Execution\DataLoader\BatchLoaderRegistry;
 use Nuwave\Lighthouse\Execution\ErrorPool;
 use Nuwave\Lighthouse\Schema\AST\ASTBuilder;
 use Nuwave\Lighthouse\Schema\SchemaBuilder;
@@ -251,7 +252,7 @@ class GraphQL
      */
     public function prepSchema(): Schema
     {
-        if (! isset($this->executableSchema)) {
+        if ($this->executableSchema === null) {
             $this->executableSchema = $this->schemaBuilder->build(
                 $this->astBuilder->documentAST()
             );
@@ -265,7 +266,10 @@ class GraphQL
      */
     protected function cleanUp(): void
     {
-        BatchLoader::forgetInstances();
+        BatchLoaderRegistry::forgetInstances();
         $this->errorPool->clear();
+
+        // TODO remove in v6
+        BatchLoader::forgetInstances();
     }
 }

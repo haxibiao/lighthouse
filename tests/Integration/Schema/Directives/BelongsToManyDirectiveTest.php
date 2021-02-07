@@ -12,14 +12,14 @@ use Tests\Utils\Models\User;
 class BelongsToManyDirectiveTest extends DBTestCase
 {
     /**
-     * Auth user.
+     * The authenticated user.
      *
      * @var \Tests\Utils\Models\User
      */
     protected $user;
 
     /**
-     * User's tasks.
+     * Roles of the authenticated user.
      *
      * @var \Illuminate\Support\Collection
      */
@@ -30,19 +30,14 @@ class BelongsToManyDirectiveTest extends DBTestCase
      */
     protected $rolesCount = 4;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
         $this->user = factory(User::class)->create();
         $this->roles = factory(Role::class, $this->rolesCount)->create();
 
-        $this->user
-            ->roles()
-            ->attach(
-                $this->roles,
-                ['meta' => 'new']
-            );
+        $this->user->roles()->attach($this->roles, ['meta' => 'new']);
 
         $this->be($this->user);
     }
@@ -408,11 +403,11 @@ class BelongsToManyDirectiveTest extends DBTestCase
 
     public function testThrowsErrorWithUnknownTypeArg(): void
     {
-        $this->expectExceptionMessageRegExp('/^Found invalid pagination type/');
+        $this->expectExceptionMessage('Found invalid pagination type: foo');
 
         $schema = $this->buildSchemaWithPlaceholderQuery(/** @lang GraphQL */ '
         type User {
-            roles(first: Int! after: Int): [Role!]! @belongsToMany(type:"foo")
+            roles(first: Int! after: Int): [Role!]! @belongsToMany(type: "foo")
         }
 
         type Role {

@@ -5,19 +5,13 @@ namespace Tests\Integration\Subscriptions;
 use Illuminate\Http\Request;
 use Nuwave\Lighthouse\Execution\ContextFactory;
 use Nuwave\Lighthouse\Subscriptions\Serializer;
-use Nuwave\Lighthouse\Subscriptions\SubscriptionServiceProvider;
 use Tests\DBTestCase;
+use Tests\TestsSubscriptions;
 use Tests\Utils\Models\User;
 
 class SerializerTest extends DBTestCase
 {
-    protected function getPackageProviders($app): array
-    {
-        return array_merge(
-            parent::getPackageProviders($app),
-            [SubscriptionServiceProvider::class]
-        );
-    }
+    use TestsSubscriptions;
 
     public function testWillSerializeUserModelAndRetrieveItFromTheDatabaseWhenUnserializing(): void
     {
@@ -34,7 +28,11 @@ class SerializerTest extends DBTestCase
 
         $context = $contextFactory->generate($request);
 
-        $this->assertSame($user, $context->user());
+        /** @var \Tests\Utils\Models\User|null $userFromContext */
+        $userFromContext = $context->user();
+        $this->assertNotNull($userFromContext);
+
+        $this->assertSame($user, $userFromContext);
 
         $retrievedFromDatabase = false;
 
@@ -48,9 +46,10 @@ class SerializerTest extends DBTestCase
 
         $this->assertTrue($retrievedFromDatabase);
 
+        /** @var \Tests\Utils\Models\User|null $unserializedUser */
         $unserializedUser = $unserialized->user();
-        $this->assertInstanceOf(User::class, $unserializedUser);
-        /** @var \Tests\Utils\Models\User $unserializedUser */
+        $this->assertNotNull($unserializedUser);
+
         $this->assertSame($user->getKey(), $unserializedUser->getKey());
     }
 }

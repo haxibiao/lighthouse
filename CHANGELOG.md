@@ -9,13 +9,66 @@ You can find and compare releases at the [GitHub release page](https://github.co
 
 ## Unreleased
 
+### Added
+
+- Validate that `@with` and `@withCount` are not used on root fields https://github.com/nuwave/lighthouse/pull/1714
+
+## 5.2.0
+
+### Added
+
+- Allow using the `@builder` directive on fields https://github.com/nuwave/lighthouse/pull/1687
+- Add dedicated `\Nuwave\Lighthouse\Scout\ScoutBuilderDirective` https://github.com/nuwave/lighthouse/pull/1691
+- Allow `@eq` directive on fields https://github.com/nuwave/lighthouse/pull/1681
+- Add `@throttle` directive to set field rate limit using Laravel rate limiting services https://github.com/nuwave/lighthouse/pull/1708
+- Add subscriptions v2 https://github.com/nuwave/lighthouse/pull/1716
+
+### Changed
+
+- Clarify semantics of combining `@search` with other directives https://github.com/nuwave/lighthouse/pull/1691
+- Move Scout related classes into `\Nuwave\Lighthouse\Scout` https://github.com/nuwave/lighthouse/pull/1698
+- `BaseDirective` loads all arguments and caches them after the first `directiveHasArgument`/`directiveArgValue` call https://github.com/nuwave/lighthouse/pull/1707
+- Use gate response in authorization errors of `@can` directive https://github.com/nuwave/lighthouse/pull/1715
+
+### Fixed
+
+- Fix nested `OR` conditions in `HAS` relations https://github.com/nuwave/lighthouse/pull/1713
+
+### Deprecated
+
+- Specify `@guard(with: "api")` should be changed to `@guard(with: ["api"])`https://github.com/nuwave/lighthouse/pull/1705
+
+## 5.1.0
+
+### Added
+
+- Allow spec-compliant definition of the `messages` argument on `@rules` and `@rulesForArray` https://github.com/nuwave/lighthouse/pull/1662
+- Validate correct usage of `@rules` and `@rulesForArray` https://github.com/nuwave/lighthouse/pull/1662
+- Allow eager-loading multiple relations on a single field using `@with` https://github.com/nuwave/lighthouse/pull/1528
+- Add `\Nuwave\Lighthouse\Execution\DataLoader\BatchLoaderRegistry` to instantiate arbitrary batch loaders https://github.com/nuwave/lighthouse/pull/1528
+- Add `@limit` directive to allow clients to specify the maximum number of results to return https://github.com/nuwave/lighthouse/pull/1674
+- Predefine default field ordering by using `@orderBy` on fields https://github.com/nuwave/lighthouse/pull/1678
+- Add `@like` directive to use a client given value to add a `LIKE` conditional to a database query https://github.com/nuwave/lighthouse/issues/1644
+
+### Changed
+
+- Improve batch loading performance https://github.com/nuwave/lighthouse/pull/1528
+- Require `webonyx/graphql-php` version `^14.5`
+
 ### Deprecated
 
 - Deprecate the `globalId` argument on the `@delete`, `@forceDelete` and `@restore` directives https://github.com/nuwave/lighthouse/pull/1660
+- Deprecate passing the `messages` argument on `@rules` and `@rulesForArray` as a map with arbitrary keys https://github.com/nuwave/lighthouse/pull/1662
+- Deprecate `\Nuwave\Lighthouse\Execution\DataLoader\BatchLoader` in favour of `\Nuwave\Lighthouse\Execution\DataLoader\BatchLoaderRegistry` https://github.com/nuwave/lighthouse/pull/1528
 
 ### Fixed
 
 - Remove non-functional `globalId` argument definition from `@update` https://github.com/nuwave/lighthouse/pull/1660
+- Resolve field middleware directives in lexical order https://github.com/nuwave/lighthouse/pull/1666
+- Ensure `Carbon\Carbon` is cast to `Illuminate\Support\Carbon` in date scalars https://github.com/nuwave/lighthouse/pull/1672
+- Fix Laravel 5.6 compatibility for `@withCount` and paginated relationship directives https://github.com/nuwave/lighthouse/pull/1528
+- Fix issue where argument names where used instead of variable names in subscription queries https://github.com/nuwave/lighthouse/pull/1683
+- Fix issue with TTL breaking subscriptions https://github.com/nuwave/lighthouse/pull/1685
 
 ## 5.0.2
 

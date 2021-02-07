@@ -1,12 +1,15 @@
 .PHONY: it
-it: up vendor stan test ## Run useful checks before commits
+it: vendor stan test ## Run useful checks before commits
 
 .PHONY: help
 help: ## Displays this list of targets with descriptions
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: setup
-setup: ## Setup the local environment
+setup: build vendor ## Setup the local environment
+
+.PHONY: build
+build: ## Build the local Docker containers
 	docker-compose build --build-arg USER_ID=$(shell id -u) --build-arg GROUP_ID=$(shell id -g)
 
 .PHONY: up
@@ -30,9 +33,8 @@ rector: up ## Automatic code fixes with rector
 	docker-compose exec php composer rector
 
 vendor: up composer.json ## Install composer dependencies
-	# TODO reenable once laragraph/utils is stable
-	# docker-compose exec php composer validate --strict
-	docker-compose exec php composer install
+	docker-compose exec php composer update
+	docker-compose exec php composer validate --strict
 	docker-compose exec php composer normalize
 
 .PHONY: php

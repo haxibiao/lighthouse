@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class DeferTest extends TestCase
 {
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,11 +38,9 @@ class DeferTest extends TestCase
         }
         ');
 
-        $this->assertTrue(
-            in_array(
-                'defer',
-                $introspection->json('data.__schema.directives.*.name')
-            )
+        $this->assertContains(
+            'defer',
+            $introspection->json('data.__schema.directives.*.name')
         );
     }
 

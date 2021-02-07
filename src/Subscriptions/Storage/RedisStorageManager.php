@@ -2,8 +2,8 @@
 
 namespace Nuwave\Lighthouse\Subscriptions\Storage;
 
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Redis\Factory;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Support\Collection;
 use Nuwave\Lighthouse\Subscriptions\Contracts\StoresSubscriptions;
 use Nuwave\Lighthouse\Subscriptions\Subscriber;
@@ -37,10 +37,10 @@ class RedisStorageManager implements StoresSubscriptions
      */
     protected $ttl;
 
-    public function __construct(Repository $config, Factory $redis)
+    public function __construct(ConfigRepository $config, RedisFactory $redis)
     {
         $this->connection = $redis->connection(
-            $config->get('lighthouse.broadcasters.echo.connection', 'default')
+            $config->get('lighthouse.broadcasters.echo.connection') ?? 'default'
         );
         $this->ttl = $config->get('lighthouse.subscriptions.storage_ttl');
     }
@@ -89,16 +89,19 @@ class RedisStorageManager implements StoresSubscriptions
             $subscriber->channel,
         ]);
         // ...and refresh the ttl of this set as well.
-        if (isset($this->ttl)) {
+        if ($this->ttl !== null) {
             $this->connection->command('expire', [$topicKey, $this->ttl]);
         }
 
         // Lastly, we store the subscriber as a serialized string...
-        $this->connection->command('set', array_merge([
+        $setArguments = [
             $this->channelKey($subscriber->channel),
             $this->serialize($subscriber),
-            // ...and set the EX option to set the ttl in one command.
-        ], $this->ttl ? ['EX', $this->ttl] : []));
+        ];
+        if ($this->ttl !== null) {
+            $setArguments [] = $this->ttl;
+        }
+        $this->connection->command('set', $setArguments);
     }
 
     public function deleteSubscriber(string $channel): ?Subscriber
@@ -106,7 +109,7 @@ class RedisStorageManager implements StoresSubscriptions
         $key = $this->channelKey($channel);
         $subscriber = $this->getSubscriber($key);
 
-        if ($subscriber) {
+        if ($subscriber !== null) {
             // Like in storeSubscriber (but in reverse), we delete the subscriber...
             $this->connection->command('del', [$key]);
             // ...and remove it from the set of subscribers of this topic.
@@ -151,7 +154,7 @@ class RedisStorageManager implements StoresSubscriptions
     protected function serialize($value)
     {
         $isProperNumber = is_numeric($value)
-            && ! ($value === INF || $value === -INF)
+            && ($value !== INF && $value !== -INF)
             && ! is_nan(floatval($value));
 
         return $isProperNumber

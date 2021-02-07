@@ -10,15 +10,19 @@ use Nuwave\Lighthouse\Subscriptions\BroadcastManager;
 use Nuwave\Lighthouse\Subscriptions\Contracts\Broadcaster;
 use Nuwave\Lighthouse\Subscriptions\Subscriber;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\TestCase;
+use Tests\TestsSubscriptions;
 
-class BroadcastManagerTest extends SubscriptionTestCase
+class BroadcastManagerTest extends TestCase
 {
+    use TestsSubscriptions;
+
     /**
      * @var \Nuwave\Lighthouse\Subscriptions\BroadcastManager
      */
     protected $broadcastManager;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -10,17 +10,16 @@
 
 By：标题我就不翻译了，我觉得没有翻译的必要，要是你说你不懂啥意思？来来来，你加群我们好好聊聊人生？PHP 技术 QQ 交流群：1094858223
 
-我们从定义最简单的模式开始：Root `Query` 类型，带有一个名为hello的字段，该字段返回一个字符串。
+我们从定义最简单的模式开始：Root `Query` 类型，带有一个名为 hello 的字段，该字段返回一个字符串。
 带有一个叫 `hello` 的字段，该字段返回一个 `String` 。
 
 ```graphql
 type Query {
-  hello: String! 
+    hello: String!
 }
 ```
 
 这定义了我们数据的模型，并告诉客户端他们可以获得什么。接下来需要实现一个对应的解析器 (resolver)。
-
 
 默认情况下，Lighthouse 在 `App\GraphQL\Queries` 或 `App\GraphQL\Mutations` 中查找字段 (field) 名称大写的类，并使用相同的 [解析器 (resolver) 参数](../api-reference/resolvers.md#resolver-function-signature) 调用它的 `__invoke` 函数。
 
@@ -39,7 +38,8 @@ class Hello
     }
 }
 ```
-创建这样一个类的最简单方法是使用内建的 `artisan` 命令 `lighthouse:query` 和  `lighthouse:mutation` ，它们都有一个参数：要生成的字段 (field) 的名称。
+
+创建这样一个类的最简单方法是使用内建的 `artisan` 命令 `lighthouse:query` 和 `lighthouse:mutation` ，它们都有一个参数：要生成的字段 (field) 的名称。
 
 例如，这是你如何为字段 (field) 生成一个类 `hello` ：
 
@@ -51,7 +51,7 @@ php artisan lighthouse:query Hello
 
 ```graphql
 {
-  hello
+    hello
 }
 ```
 
@@ -59,9 +59,9 @@ php artisan lighthouse:query Hello
 
 ```json
 {
-  "data": {
-    "hello": "world!"
-  }
+    "data": {
+        "hello": "world!"
+    }
 }
 ```
 
@@ -73,7 +73,7 @@ php artisan lighthouse:query Hello
 
 ```graphql
 type Query {
-  greet(name: String!): String
+    greet(name: String!): String
 }
 ```
 
@@ -99,7 +99,7 @@ class Greet
 
 ```graphql
 {
-  greet(name: "Foo")
+    greet(name: "Foo")
 }
 ```
 
@@ -107,9 +107,9 @@ class Greet
 
 ```json
 {
-  "data": {
-    "greet": "Hello, Foo!"
-  }
+    "data": {
+        "greet": "Hello, Foo!"
+    }
 }
 ```
 
@@ -125,15 +125,15 @@ type Query {
 
 ```graphql
 {
-  greet
+    greet
 }
 ```
 
 ```json
 {
-  "data": {
-    "greet": "Hello, you!"
-  }
+    "data": {
+        "greet": "Hello, you!"
+    }
 }
 ```
 
@@ -143,13 +143,13 @@ type Query {
 
 ```graphql
 type Query {
-  user: User!
+    user: User!
 }
 
 type User {
-  id: ID!
-  name: String!
-  email: String
+    id: ID!
+    name: String!
+    email: String
 }
 ```
 
@@ -157,10 +157,10 @@ type User {
 
 ```graphql
 {
-  user {
-    id
-    name
-  }
+    user {
+        id
+        name
+    }
 }
 ```
 
@@ -200,6 +200,9 @@ function resolveUserAttribute(User $user, array $args, GraphQLContext $context, 
 ```
 
 幸运的是，底层的 GraphQL 实现已经提供了[一个合理的默认解析器 (default resolver) ](http://webonyx.github.io/graphql-php/data-fetching/#default-field-resolver)，它可以很好地处理通常从最高层解析器 (root resolver) 返回的数据，例如 `Eloquent` 模型 (models) 或关联数组 (associative arrays)。
+Fortunately, the underlying GraphQL implementation already provides [a sensible default resolver](https://webonyx.github.io/graphql-php/data-fetching/#default-field-resolver),
+that plays quite nicely with the data you would typically return from
+a root resolver, e.g. `Eloquent` models or associative arrays.
 
 这意味着在大多数情况下，您只需为最高层字段 (root fields) 提供解析器 (resolvers)，并确保它们以正确的形式返回数据。
 

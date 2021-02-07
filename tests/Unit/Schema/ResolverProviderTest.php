@@ -18,7 +18,7 @@ class ResolverProviderTest extends TestCase
      */
     protected $resolverProvider;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -76,7 +76,6 @@ class ResolverProviderTest extends TestCase
 
         return new FieldValue(
             $typeValue,
-            // @phpstan-ignore-next-line can not be null
             $queryType->fields[0]
         );
     }

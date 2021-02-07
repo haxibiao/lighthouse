@@ -6,16 +6,19 @@ use GraphQL\Language\Parser;
 use GraphQL\Utils\AST;
 use Nuwave\Lighthouse\Subscriptions\Storage\CacheStorageManager;
 use Nuwave\Lighthouse\Subscriptions\Subscriber;
-use Tests\Unit\Subscriptions\SubscriptionTestCase;
+use Tests\TestCase;
+use Tests\TestsSubscriptions;
 
-class CacheStorageManagerTest extends SubscriptionTestCase
+class CacheStorageManagerTest extends TestCase
 {
+    use TestsSubscriptions;
+
     /**
      * @var \Nuwave\Lighthouse\Subscriptions\Storage\CacheStorageManager
      */
     protected $storage;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 

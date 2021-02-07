@@ -6,12 +6,12 @@ GraphQL 查询的嵌套特性带来的一个常见的性能缺陷是所谓的 N+
 
 ```graphql
 {
-  posts {
-    title
-    author {
-      name
+    posts {
+        title
+        author {
+            name
+        }
     }
-  }
 }
 ```
 
@@ -25,13 +25,13 @@ GraphQL 查询的嵌套特性带来的一个常见的性能缺陷是所谓的 N+
 
 ```graphql
 type Post {
-  title: String!
-  author: User! @belongsTo
+    title: String!
+    author: User! @belongsTo
 }
 
 type User {
-  name: String!
-  posts: [Post!]! @hasMany
+    name: String!
+    posts: [Post!]! @hasMany
 }
 ```
 
@@ -43,5 +43,7 @@ type User {
 
 `webonyx/graphql-php` 允许延迟字段的实际解析，直到真正需要时才进行解析。
 更多信息请 [参阅文档](http://webonyx.github.io/graphql-php/data-fetching/#solving-n1-problem)。
+`webonyx/graphql-php` allows deferring the actual resolution of a field until it is actually needed,
+read more [in their documentation](https://webonyx.github.io/graphql-php/data-fetching/#solving-n1-problem).
 
 如果您需要自定义批量加载，您可以扩展 `\Nuwave\Lighthouse\Execution\DataLoader\BatchLoader` 批量加载程序。

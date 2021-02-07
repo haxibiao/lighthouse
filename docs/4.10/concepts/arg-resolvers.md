@@ -15,17 +15,17 @@ GraphQL 的执行引擎允许您编写小而集中的字段解析器函数，这
 
 ```graphql
 type Mutation {
-  createTask(input: CreateTaskInput): Task!
+    createTask(input: CreateTaskInput): Task!
 }
 
 input CreateTaskInput {
-  name: String!
-  notes: [CreateNoteInput!]
+    name: String!
+    notes: [CreateNoteInput!]
 }
 
 input CreateNoteInput {
-  content: String!
-  link: String
+    content: String!
+    link: String
 }
 ```
 
@@ -33,21 +33,16 @@ input CreateNoteInput {
 
 ```graphql
 mutation CreateTaskWithNotes {
-  createTask(
-    id: 45
-    name: "Do something"
-    notes: [
-      {
-        content: "Foo bar",
-        link: "http://foo.bar"
-      },
-      {
-        content: "Awesome note"
-      }
-    ]
-  ) {
-    id
-  }
+    createTask(
+        id: 45
+        name: "Do something"
+        notes: [
+            { content: "Foo bar", link: "https://foo.bar" }
+            { content: "Awesome note" }
+        ]
+    ) {
+        id
+    }
 }
 ```
 

@@ -52,6 +52,8 @@ graphql/
 
 您可以导入多个匹配某个模式（schema）的文件，而不是为每个文件命名。
 它将使用 PHP 的 [glob 函数](http://php.net/manual/function.glob.php) 加载。
+Instead of naming each individual file, you can import multiple files that matches a pattern.
+It will be loaded using PHP's [glob function](https://php.net/manual/function.glob.php).
 
 ```graphql
 #import post/*.graphql

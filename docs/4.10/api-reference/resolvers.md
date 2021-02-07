@@ -33,3 +33,4 @@ function (int $childrenComplexity, array $args): int
 2. `array $args` ：传递到字段中的参数，例如，对于像 `user(name: "Bob")` 这样的字段调用，应该是 `['name' => 'Bob']`
 
 在 [webonyx/graphql-php 文档](http://webonyx.github.io/graphql-php/security/#query-complexity-analysis) 中了解更多关于查询复杂性的信息。
+Read more about query complexity in the [webonyx/graphql-php docs](https://webonyx.github.io/graphql-php/security/#query-complexity-analysis)

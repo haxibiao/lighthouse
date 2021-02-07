@@ -9,6 +9,27 @@ Compare your `lighthouse.php` against the latest [default configuration](src/lig
 
 ## v5 to v6
 
+### `messages` on `@rules` and `@rulesForArray`
+
+Lighthouse previously allowed passing a map with arbitrary keys as the `messages`
+argument on `@rules` and `@rulesForArray`. Such a construct is impossible to define
+within the directive definition and leads to static validation errors.
+
+```diff
+@rules(
+    apply: ["max:280"],
+-   messages: {
+-       max: "Tweets have a limit of 280 characters"
+-   }
++   messages: [
++       {
++           rule: "max"
++           message: "Tweets have a limit of 280 characters"
++       }
++   ]
+)
+```
+
 ### Use `@globalId` over `@delete(globalId: true)`
 
 The `@delete`, `@forceDelete` and `@restore` directives no longer offer the
@@ -20,6 +41,41 @@ type Mutation {
 +   deleteUser(id: ID! @globalId): User! @delete
 }
 ```
+
+### Specify `@guard(with: "api")` as `@guard(with: ["api"])`
+
+Due to Lighthouse's ongoing effort to provide static schema validation,
+the `with` argument of `@guard` must now be provided as a list of strings.
+
+```diff
+type Mutation {
+-   somethingSensitive: Boolean @guard(with: "api")
++   somethingSensitive: Boolean @guard(with: ["api"])
+}
+```
+
+### Use subscriptions response format version 2
+
+The previous version 1 contained a redundant key `channels` and is no longer supported.
+
+```diff
+{
+  "data": {...},
+  "extensions": {
+    "lighthouse_subscriptions": {
+-     "version": 1,
++     "version": 2,
+      "channel": "channel-name"
+-     "channels": {
+-       "subscriptionName": "channel-name"
+-     },
+    }
+  }
+}
+```
+
+It is recommended to switch to version 2 before upgrading Lighthouse to give clients
+a smooth transition period.
 
 ## v4 to v5
 

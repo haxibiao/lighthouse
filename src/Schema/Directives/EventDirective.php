@@ -39,24 +39,18 @@ GRAPHQL;
 
     public function handleField(FieldValue $fieldValue, Closure $next): FieldValue
     {
-        $previousResolver = $fieldValue->getResolver();
-
-        return $next(
-            $fieldValue->setResolver(
-                function () use ($previousResolver) {
-                    $result = $previousResolver(...func_get_args());
-
-                    $eventClassName = $this->namespaceClassName(
-                        $this->directiveArgValue('dispatch')
-                    );
-
-                    $this->eventsDispatcher->dispatch(
-                        new $eventClassName($result)
-                    );
-
-                    return $result;
-                }
-            )
+        $eventClassName = $this->namespaceClassName(
+            $this->directiveArgValue('dispatch')
         );
+
+        $fieldValue->resultHandler(function ($result) use ($eventClassName) {
+            $this->eventsDispatcher->dispatch(
+                new $eventClassName($result)
+            );
+
+            return $result;
+        });
+
+        return $next($fieldValue);
     }
 }

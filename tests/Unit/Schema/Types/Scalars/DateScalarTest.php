@@ -36,6 +36,14 @@ abstract class DateScalarTest extends TestCase
         $this->scalarInstance()->parseValue($value);
     }
 
+    public function testConvertsCarbonCarbonToIlluminateSupportCarbon(): void
+    {
+        $this->assertInstanceOf(
+            \Illuminate\Support\Carbon::class,
+            $this->scalarInstance()->parseValue(\Carbon\Carbon::now())
+        );
+    }
+
     /**
      * Those values should fail passing as a date.
      *
@@ -86,10 +94,11 @@ abstract class DateScalarTest extends TestCase
 
     public function testSerializesCarbonInstance(): void
     {
-        $now = now();
+        $now = Carbon::now();
         $result = $this->scalarInstance()->serialize($now);
 
-        $this->assertInternalType('string', $result);
+        // TODO use native assertIsString when upgrading PHPUnit
+        $this->assertTrue(is_string($result));
     }
 
     /**
@@ -108,9 +117,9 @@ abstract class DateScalarTest extends TestCase
     abstract protected function scalarInstance(): DateScalar;
 
     /**
-     * Data provider for valid date values.
+     * Data provider for valid date strings.
      *
-     * @return array<array<mixed>>
+     * @return array<array<string>>
      */
     abstract public function validDates(): array;
 
