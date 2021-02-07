@@ -9,8 +9,7 @@ use Nuwave\Lighthouse\Exceptions\DefinitionException;
 use Nuwave\Lighthouse\Schema\AST\ASTHelper;
 use Nuwave\Lighthouse\Schema\AST\DocumentAST;
 
-class PaginationManipulator
-{
+class PaginationManipulator {
     /**
      * @var \Nuwave\Lighthouse\Schema\AST\DocumentAST
      */
@@ -27,8 +26,7 @@ class PaginationManipulator
      */
     protected $modelClass;
 
-    public function __construct(DocumentAST $documentAST)
-    {
+    public function __construct(DocumentAST $documentAST) {
         $this->documentAST = $documentAST;
     }
 
@@ -38,8 +36,7 @@ class PaginationManipulator
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      * @return $this
      */
-    public function setModelClass(string $modelClass): self
-    {
+    public function setModelClass(string $modelClass): self {
         $this->modelClass = $modelClass;
 
         return $this;
@@ -90,7 +87,7 @@ class PaginationManipulator
 
         $connectionFieldName = addslashes(ConnectionField::class);
 
-        $connectionType = Parser::objectTypeDefinition(/** @lang GraphQL */ <<<GRAPHQL
+        $connectionType = Parser::objectTypeDefinition(/** @lang GraphQL */<<<GRAPHQL
             "A paginated list of $fieldTypeName edges."
             type $connectionTypeName {
                 "Pagination information about the list of edges."
@@ -103,9 +100,7 @@ GRAPHQL
         );
         $this->addPaginationWrapperType($connectionType);
 
-        $connectionEdge = $edgeType
-            ?? $this->documentAST->types[$connectionEdgeName]
-            ?? Parser::objectTypeDefinition(/** @lang GraphQL */ <<<GRAPHQL
+        $connectionEdge = $edgeType ?? $this->documentAST->types[$connectionEdgeName] ?? Parser::objectTypeDefinition(/** @lang GraphQL */<<<GRAPHQL
                 "An edge that contains a node of type $fieldTypeName and a cursor."
                 type $connectionEdgeName {
                     "The $fieldTypeName node."
@@ -115,20 +110,20 @@ GRAPHQL
                     cursor: String!
                 }
 GRAPHQL
-            );
+        );
         $this->documentAST->setTypeDefinition($connectionEdge);
 
-        $fieldDefinition->arguments [] = Parser::inputValueDefinition(
+        $fieldDefinition->arguments[] = Parser::inputValueDefinition(
             self::countArgument($defaultCount, $maxCount)
         );
-        $fieldDefinition->arguments [] = Parser::inputValueDefinition(/** @lang GraphQL */ <<<'GRAPHQL'
+        $fieldDefinition->arguments[] = Parser::inputValueDefinition(/** @lang GraphQL */<<<'GRAPHQL'
 "A cursor after which elements are returned."
 after: String
 GRAPHQL
         );
 
         $fieldDefinition->type = Parser::namedType($connectionTypeName);
-        $parentType->fields [] = $fieldDefinition;
+        $parentType->fields[] = $fieldDefinition;
     }
 
     /**
@@ -136,22 +131,21 @@ GRAPHQL
      *
      * This merges preexisting definitions to preserve maximum information.
      */
-    protected function addPaginationWrapperType(ObjectTypeDefinitionNode $objectType): void
-    {
+    protected function addPaginationWrapperType(ObjectTypeDefinitionNode $objectType): void {
         // If the type already exists, we use that instead
         if (isset($this->documentAST->types[$objectType->name->value])) {
             $objectType = $this->documentAST->types[$objectType->name->value];
 
-            if (! $objectType instanceof ObjectTypeDefinitionNode) {
+            if (!$objectType instanceof ObjectTypeDefinitionNode) {
                 throw new DefinitionException(
-                    'Expected object type for pagination wrapper '.$objectType->name->value
-                    .', found '.$objectType->kind.' instead.'
+                    'Expected object type for pagination wrapper ' . $objectType->name->value
+                    . ', found ' . $objectType->kind . ' instead.'
                 );
             }
         }
 
         if ($this->modelClass) {
-            $objectType->directives [] = Parser::constDirective('@model(class: "'.addslashes($this->modelClass).'")');
+            $objectType->directives[] = Parser::constDirective('@model(class: "' . addslashes($this->modelClass) . '")');
         }
 
         $this->documentAST->setTypeDefinition($objectType);
@@ -170,7 +164,7 @@ GRAPHQL
         $paginatorTypeName = "{$fieldTypeName}Paginator";
         $paginatorFieldClassName = addslashes(PaginatorField::class);
 
-        $paginatorType = Parser::objectTypeDefinition(/** @lang GraphQL */ <<<GRAPHQL
+        $paginatorType = Parser::objectTypeDefinition(/** @lang GraphQL */<<<GRAPHQL
             "A paginated list of $fieldTypeName items."
             type $paginatorTypeName {
                 "Pagination information about the list of items."
@@ -183,32 +177,31 @@ GRAPHQL
         );
         $this->addPaginationWrapperType($paginatorType);
 
-        $fieldDefinition->arguments [] = Parser::inputValueDefinition(
+        $fieldDefinition->arguments[] = Parser::inputValueDefinition(
             self::countArgument($defaultCount, $maxCount)
         );
-        $fieldDefinition->arguments [] = Parser::inputValueDefinition("\"The offset from which elements are returned.\"\npage: Int");
+        $fieldDefinition->arguments[] = Parser::inputValueDefinition("\"The offset from which elements are returned.\"\npage: Int");
 
         $fieldDefinition->type = Parser::namedType($paginatorTypeName);
-        $parentType->fields [] = $fieldDefinition;
+        $parentType->fields[] = $fieldDefinition;
     }
 
     /**
      * Build the count argument definition string, considering default and max values.
      */
-    protected static function countArgument(?int $defaultCount = null, ?int $maxCount = null): string
-    {
-        $description = '"Limits number of fetched elements.';
+    protected static function countArgument(?int $defaultCount = null, ?int $maxCount = null): string {
+        $description = '"Limits number of fetched elements(临时兼容哈希表app).';
         if ($maxCount) {
-            $description .= ' Maximum allowed value: '.$maxCount.'.';
+            $description .= ' Maximum allowed value: ' . $maxCount . '.';
         }
         $description .= "\"\n";
 
-        $definition = 'first: Int'
-            .($defaultCount
-                ? ' = '.$defaultCount
-                : '!'
-            );
+        $definition = 'count: Int'
+            . ($defaultCount
+            ? ' = ' . $defaultCount
+            : '!'
+        );
 
-        return $description.$definition;
+        return $description . $definition;
     }
 }

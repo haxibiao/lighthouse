@@ -7,8 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Laravel\Scout\Builder as ScoutBuilder;
 
-class PaginationArgs
-{
+class PaginationArgs {
     /**
      * @var int
      */
@@ -28,18 +27,17 @@ class PaginationArgs
      *
      * @throws \GraphQL\Error\Error
      */
-    public static function extractArgs(array $args, PaginationType $paginationType, ?int $paginateMaxCount): self
-    {
+    public static function extractArgs(array $args, PaginationType $paginationType, ?int $paginateMaxCount): self {
         $instance = new static();
 
         if ($paginationType->isConnection()) {
-            $instance->first = $args['first'];
+            $instance->first = $args['count'];
             $instance->page = self::calculateCurrentPage(
                 $instance->first,
                 Cursor::decode($args)
             );
         } else {
-            $instance->first = $args['first'];
+            $instance->first = $args['count'];
             $instance->page = Arr::get($args, 'page', 1);
         }
 
@@ -62,24 +60,21 @@ class PaginationArgs
         return $instance;
     }
 
-    public static function requestedZeroOrLessItems(int $amount): string
-    {
+    public static function requestedZeroOrLessItems(int $amount): string {
         return "Requested pagination amount must be more than 0, got {$amount}.";
     }
 
-    public static function requestedTooManyItems(int $maxCount, int $actualCount): string
-    {
+    public static function requestedTooManyItems(int $maxCount, int $actualCount): string {
         return "Maximum number of {$maxCount} requested items exceeded, got {$actualCount}. Fetch smaller chunks.";
     }
 
     /**
      * Calculate the current page to inform the user about the pagination state.
      */
-    protected static function calculateCurrentPage(int $first, int $after, int $defaultPage = 1): int
-    {
+    protected static function calculateCurrentPage(int $first, int $after, int $defaultPage = 1): int {
         return $first && $after
-            ? (int) floor(($first + $after) / $first)
-            : $defaultPage;
+        ? (int) floor(($first + $after) / $first)
+        : $defaultPage;
     }
 
     /**
@@ -87,8 +82,7 @@ class PaginationArgs
      *
      * @param  \Illuminate\Database\Query\Builder|\Laravel\Scout\Builder|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation  $builder
      */
-    public function applyToBuilder(object $builder): LengthAwarePaginator
-    {
+    public function applyToBuilder(object $builder): LengthAwarePaginator {
         if ($builder instanceof ScoutBuilder) {
             return $builder->paginate($this->first, 'page', $this->page);
         }

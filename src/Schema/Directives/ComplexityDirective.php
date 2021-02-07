@@ -7,11 +7,9 @@ use Nuwave\Lighthouse\Schema\Values\FieldValue;
 use Nuwave\Lighthouse\Support\Contracts\FieldMiddleware;
 use Nuwave\Lighthouse\Support\Utils;
 
-class ComplexityDirective extends BaseDirective implements FieldMiddleware
-{
-    public static function definition(): string
-    {
-        return /** @lang GraphQL */ <<<'GRAPHQL'
+class ComplexityDirective extends BaseDirective implements FieldMiddleware {
+    public static function definition(): string {
+        return /** @lang GraphQL */<<<'GRAPHQL'
 """
 Customize the calculation of a fields complexity score before execution.
 """
@@ -26,8 +24,7 @@ directive @complexity(
 GRAPHQL;
     }
 
-    public function handleField(FieldValue $fieldValue, Closure $next): FieldValue
-    {
+    public function handleField(FieldValue $fieldValue, Closure $next): FieldValue {
         if ($this->directiveHasArgument('resolver')) {
             [$className, $methodName] = $this->getMethodArgumentParts('resolver');
 
@@ -40,7 +37,7 @@ GRAPHQL;
         } else {
             $resolver = static function (int $childrenComplexity, array $args): int {
                 /** @var int $complexity */
-                $complexity = $args['first'] ?? 1;
+                $complexity = $args['count'] ?? 1;
 
                 return $childrenComplexity * $complexity;
             };
