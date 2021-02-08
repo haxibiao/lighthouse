@@ -2,6 +2,13 @@
 
 return [
 
+    'convert_args' =>[
+        'movie_id'      => 'intval',
+        'id'            => 'intval',
+        'progress'      => 'strval',
+        'user_id'       => 'intval',
+        'visited_id'    => 'intval',
+    ],
     /*
     |--------------------------------------------------------------------------
     | Route Configuration

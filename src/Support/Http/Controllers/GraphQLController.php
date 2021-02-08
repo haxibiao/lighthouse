@@ -21,6 +21,9 @@ class GraphQLController
         Helper $graphQLHelper,
         CreatesResponse $createsResponse
     ): Response {
+
+        $request = $this->prepRequest($request);
+
         $eventsDispatcher->dispatch(
             new StartRequest($request)
         );
@@ -28,5 +31,38 @@ class GraphQLController
         $result = $graphQL->executeRequest($request, $requestParser, $graphQLHelper);
 
         return $createsResponse->createResponse($result);
+    }
+
+    /**
+     * 兼容 webonyx/graphql-php v0.13.8
+     * @param $request
+     * @return mixed
+     */
+    private function prepRequest($request){
+        $args = config('lighthouse.convert_args');
+        if(!$args){
+            return $request;
+        }
+
+        $input          = $request->all();
+        foreach ( $args as $name => $method ){
+            $value  = data_get($input,'variables.'.$name);
+            if($value){
+                $newValue = call_user_func($method,$value);
+                data_set($input,'variables.'.$name, $newValue);
+            }
+        }
+        // Create an Illuminate request from a Symfony instance.
+        $request = Request::createFromBase($request);
+        $request->initialize(
+            $request->query->all(),
+            $input,
+            $request->attributes->all(),
+            $request->cookies->all(),
+            $request->files->all(),
+            $request->server->all(),
+            json_encode($input)
+        );
+        return $request->replace($input);
     }
 }
