@@ -39,19 +39,11 @@ class GraphQLController
      * @return mixed
      */
     private function prepRequest($request){
-        $args = config('lighthouse.convert_args');
-        if(!$args){
-            return $request;
-        }
 
-        $input          = $request->all();
-        foreach ( $args as $name => $method ){
-            $value  = data_get($input,'variables.'.$name);
-            if($value){
-                $newValue = call_user_func($method,$value);
-                data_set($input,'variables.'.$name, $newValue);
-            }
-        }
+        $input = $request->all();
+        $input = $this->handleQuery($input);
+        $input = $this->handleArgs($input);
+
         // Create an Illuminate request from a Symfony instance.
         $request = Request::createFromBase($request);
         $request->initialize(
@@ -64,5 +56,53 @@ class GraphQLController
             json_encode($input)
         );
         return $request->replace($input);
+    }
+
+    /**
+     * 参数兼容
+     * @param $request
+     * @return mixed
+     */
+    private function handleArgs($input){
+        $args = config('lighthouse.convert_args');
+        if(!$args){
+            return $input;
+        }
+        foreach ( $args as $name => $method ){
+            $value  = data_get($input,'variables.'.$name);
+            if($value){
+                $newValue = call_user_func($method,$value);
+                data_set($input,'variables.'.$name, $newValue);
+            }
+        }
+        return $input;
+    }
+    /**
+     * 查询体兼容
+     * @param String $query
+     * @return String|void
+     */
+    private function handleQuery($input){
+
+        $query = data_get($input,'query');
+        if(!str_contains($query,'orderBy: {')){
+            return $input;
+        }
+        $subStr = str_before(
+            str_after($query,'orderBy: {'),
+            '}'
+        );
+
+        $oldStr 	= 'orderBy: {'.$subStr.'}';
+        $delimiterList 	= explode(', ',$subStr);
+        $arr = array();
+        foreach ($delimiterList as $delimiter){
+            $keyAngValue =  explode(': ',$delimiter);
+            $arr[$keyAngValue[0]] = $keyAngValue[1];
+        }
+        $newStr = 'orderBy: [{ column: '.$arr['field'].', order: '.$arr['order'].'}]';
+        $newQuery = str_replace($oldStr,$newStr,$query);
+        data_set($input,'query', $newQuery);
+        return $input;
     }
 }
