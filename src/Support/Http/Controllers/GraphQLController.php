@@ -45,7 +45,7 @@ class GraphQLController
 
         $input = $request->all();
         $input = $this->handleQuery($input);
-        $input = $this->handlePaginate($input);
+        $input = $this->handlePagination($input);
         $input = $this->handleArgs($input);
 
         // Create an Illuminate request from a Symfony instance.
