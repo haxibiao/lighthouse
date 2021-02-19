@@ -78,13 +78,13 @@ class GraphQLController
 			}
 		}
 
-		$containCountArg = in_array('count',$arguments);
-		if(!$containCountArg){
+		$containFirstArg = in_array('first',$arguments);
+		if(!$containFirstArg){
 			return $input;
 		}
-		$source = str_replace('$count','##flag##',$source);
-		$source = str_replace('count:','first:',$source);
-		$source = str_replace('##flag##','$count',$source);
+		$source = str_replace('$first','##flag##',$source);
+		$source = str_replace('first:','count:',$source);
+		$source = str_replace('##flag##','$first',$source);
 
 		data_set($input,'query',$source);
 		return $input;
