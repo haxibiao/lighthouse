@@ -31,13 +31,13 @@ class PaginationArgs {
         $instance = new static();
 
         if ($paginationType->isConnection()) {
-            $instance->first = $args['count'];
+            $instance->first = $args['first'];
             $instance->page = self::calculateCurrentPage(
                 $instance->first,
                 Cursor::decode($args)
             );
         } else {
-            $instance->first = $args['count'];
+            $instance->first = $args['first'];
             $instance->page = Arr::get($args, 'page', 1);
         }
 

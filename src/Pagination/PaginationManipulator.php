@@ -196,7 +196,7 @@ GRAPHQL
         }
         $description .= "\"\n";
 
-        $definition = 'count: Int'
+        $definition = 'first: Int'
             . ($defaultCount
             ? ' = ' . $defaultCount
             : '!'

@@ -2,6 +2,8 @@
 
 namespace Nuwave\Lighthouse\Support\Http\Controllers;
 
+use GraphQL\Language\Parser;
+use GraphQL\Language\Source;
 use GraphQL\Server\Helper;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class GraphQLController
 
         $input = $request->all();
         $input = $this->handleQuery($input);
+        $input = $this->handlePaginate($input);
         $input = $this->handleArgs($input);
 
         // Create an Illuminate request from a Symfony instance.
@@ -57,6 +60,34 @@ class GraphQLController
             json_encode($input)
         );
         return $request->replace($input);
+    }
+    /**
+	 * 分页参数兼容
+	 * @param $input
+	 * @return mixed
+	 */
+    private function handlePagination($input){
+        $source = data_get($input,'query');
+		$documentNode = Parser::parse(new Source($source ?? '', 'GraphQL'));
+		$arguments = array();
+		foreach ($documentNode->definitions as $definition) {
+			foreach (data_get($definition,'selectionSet.selections') as $selection){
+				foreach (data_get($selection,'arguments') as $argument){
+					$arguments[] = data_get($argument,'name.value');
+				}
+			}
+		}
+
+		$containCountArg = in_array('count',$arguments);
+		if(!$containCountArg){
+			return $input;
+		}
+		$source = str_replace('$count','##flag##',$source);
+		$source = str_replace('count:','first:',$source);
+		$source = str_replace('##flag##','$count',$source);
+
+		data_set($input,'query',$source);
+		return $input;
     }
 
     /**

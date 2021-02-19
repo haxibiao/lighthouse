@@ -37,7 +37,7 @@ GRAPHQL;
         } else {
             $resolver = static function (int $childrenComplexity, array $args): int {
                 /** @var int $complexity */
-                $complexity = $args['count'] ?? 1;
+                $complexity = $args['first'] ?? 1;
 
                 return $childrenComplexity * $complexity;
             };
