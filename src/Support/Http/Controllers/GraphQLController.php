@@ -71,8 +71,8 @@ class GraphQLController
 		$documentNode = Parser::parse(new Source($source ?? '', 'GraphQL'));
 		$arguments = array();
 		foreach ($documentNode->definitions as $definition) {
-			foreach (data_get($definition,'selectionSet.selections') as $selection){
-				foreach (data_get($selection,'arguments') as $argument){
+			foreach (data_get($definition,'selectionSet.selections',[]) as $selection){
+				foreach (data_get($selection,'arguments',[]) as $argument){
 					$arguments[] = data_get($argument,'name.value');
 				}
 			}
