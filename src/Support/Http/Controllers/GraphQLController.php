@@ -5,6 +5,7 @@ namespace Nuwave\Lighthouse\Support\Http\Controllers;
 use GraphQL\Server\Helper;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Laragraph\Utils\RequestParser;
 use Nuwave\Lighthouse\Events\StartRequest;
 use Nuwave\Lighthouse\GraphQL;
@@ -69,8 +70,9 @@ class GraphQLController
             return $input;
         }
         foreach ( $args as $name => $method ){
-            $value  = data_get($input,'variables.'.$name);
-            if($value){
+			$contains = Arr::has($input, 'variables.'.$name);
+            if($contains){
+				$value = data_get($input,'variables.'.$name);
                 $newValue = call_user_func($method,$value);
                 data_set($input,'variables.'.$name, $newValue);
             }
