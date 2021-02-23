@@ -111,31 +111,66 @@ class GraphQLController
         return $input;
     }
     /**
-     * 查询体兼容
+     * 查询体兼容(主要处理分页参数的兼容问题)
      * @param String $query
      * @return String|void
      */
     private function handleQuery($input){
+        $source = data_get($input,'query');
+        $documentNode = Parser::parse(new Source($source ?? '', 'GraphQL'));
+        foreach ($documentNode->definitions as $definition) {
+            foreach (data_get($definition,'selectionSet.selections',[]) as $selection){
+                foreach (data_get($selection,'arguments',[]) as $argument){
+                    if(data_get($argument,'name.value') == 'orderBy'){
 
-        $query = data_get($input,'query');
-        if(!str_contains($query,'orderBy: {')){
-            return $input;
-        }
-        $subStr = str_before(
-            str_after($query,'orderBy: {'),
-            '}'
-        );
+                        $node = $argument->value;
+                        if($node instanceof  \GraphQL\Language\AST\ObjectValueNode){
+                            foreach ($node->fields as $field){
+                                $value = data_get($field,'name.value');
+                                if($value  === 'field'){
+                                    $subStr = str_before(
+                                        str_after($source,'orderBy'),
+                                        '}'
+                                    );
+                                    $oldStr 	= 'orderBy'.$subStr.'}';
+                                    $subStr = strtr($subStr, array(' '=>''));
+                                    $newStr = str_replace('field:','column:',$subStr);
+                                    $newStr = 'orderBy'.$newStr.'}';
+                                    $newQuery = str_replace($oldStr,$newStr,$source);
+                                    data_set($input,'query', $newQuery);
+                                    return $input;
+                                }
+                            }
+                        }
 
-        $oldStr 	= 'orderBy: {'.$subStr.'}';
-        $delimiterList 	= explode(', ',$subStr);
-        $arr = array();
-        foreach ($delimiterList as $delimiter){
-            $keyAngValue =  explode(': ',$delimiter);
-            $arr[$keyAngValue[0]] = $keyAngValue[1];
+                        // 排序列表
+                        if($node instanceof  \GraphQL\Language\AST\ListValueNode){
+                            $values = data_get($argument,'value.values',[]);
+                            foreach ($values as $value){
+                                foreach ($value->fields as $field){
+                                    $nameNodeName = data_get($field,'name.value');
+                                    if($nameNodeName  === 'field'){
+                                        $subStr = str_before(
+                                            str_after($source,'orderBy'),
+                                            ']'
+                                        );
+                                        $oldStr 	= 'orderBy'.$subStr.']';
+                                        $subStr = strtr($subStr, array(' '=>''));
+                                        $newStr = str_replace('field:','column:',$subStr);
+                                        $newStr = 'orderBy'.$newStr.']';
+                                        $newQuery = str_replace($oldStr,$newStr,$source);
+                                        data_set($input,'query', $newQuery);
+                                        return $input;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    $arguments[] = data_get($argument,'name.value');
+                }
+            }
         }
-        $newStr = 'orderBy: [{ column: '.$arr['field'].', order: '.$arr['order'].'}]';
-        $newQuery = str_replace($oldStr,$newStr,$query);
-        data_set($input,'query', $newQuery);
         return $input;
     }
 }
