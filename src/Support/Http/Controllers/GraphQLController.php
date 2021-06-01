@@ -68,26 +68,41 @@ class GraphQLController
 	 */
     private function handlePagination($input){
         $source = data_get($input,'query');
-		$documentNode = Parser::parse(new Source($source ?? '', 'GraphQL'));
-		$arguments = array();
-		foreach ($documentNode->definitions as $definition) {
-			foreach (data_get($definition,'selectionSet.selections',[]) as $selection){
-				foreach (data_get($selection,'arguments',[]) as $argument){
-					$arguments[] = data_get($argument,'name.value');
-				}
-			}
-		}
+        $documentNode = Parser::parse(new Source($source ?? '', 'GraphQL'));
+        $arguments = array();
+        foreach ($documentNode->definitions as $definition) {
+            foreach (data_get($definition,'selectionSet.selections',[]) as $selection){
+                // 处理分页嵌套(三层嵌套)
+                foreach (data_get($selection,'selectionSet.selections',[]) as $selec){
+                    foreach (data_get($selec,'selectionSet.selections',[]) as $selecNode){
+                        foreach (data_get($selecNode,'arguments',[]) as $argument){
+                            $arguments[] = data_get($argument,'name.value');
+                        }
+                    }
+                }
+                // 处理嵌套(两层嵌套)
+                foreach (data_get($selection,'selectionSet.selections',[]) as $selec){
+                    foreach (data_get($selec,'arguments',[]) as $argument){
+                        $arguments[] = data_get($argument,'name.value');
+                    }
+                }
+                // 处理最外层入参
+                foreach (data_get($selection,'arguments',[]) as $argument){
+                    $arguments[] = data_get($argument,'name.value');
+                }
+            }
+        }
+        $containFirstArg = in_array('first',$arguments);
 
-		$containFirstArg = in_array('first',$arguments);
-		if(!$containFirstArg){
-			return $input;
-		}
-		$source = str_replace('$first','##flag##',$source);
-		$source = str_replace('first:','count:',$source);
-		$source = str_replace('##flag##','$first',$source);
+        if(!$containFirstArg){
+            return $input;
+        }
+        $source = str_replace('$first','##flag##',$source);
+        $source = str_replace('first:','count:',$source);
+        $source = str_replace('##flag##','$first',$source);
 
-		data_set($input,'query',$source);
-		return $input;
+        data_set($input,'query',$source);
+        return $input;
     }
 
     /**
